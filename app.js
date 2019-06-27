@@ -1,4 +1,3 @@
-console.log("Hello World!");
 const assert = require('assert');
 const axios = require('axios');
 
@@ -31,7 +30,7 @@ class Point {
     }
 
     relative(other) {
-        // returns which direction I am relative to teh other point
+        // returns which direction I am relative to the other point
         if (other.x > this.x) {
             return "N";
         }
@@ -51,9 +50,6 @@ class Maze {
         this.map = map;
         this.goal = goal;
         this.start = start;
-        console.log(map.length);
-        console.log(map[0].length);
-        console.log(map.map(e => e.join("")).join("\n"));
     }
 
     get length() {
@@ -88,10 +84,8 @@ class Maze {
     }
     
     f() {
-        let childrenAdded = 0;
         const openList = [];
         const closedList = {};
-        //const closedList = this.map.map(e => [...e].fill(0));
         
         openList.push(this.start);
 
@@ -138,19 +132,7 @@ class Maze {
                 if (exists) continue;
                 openList.push(child);
             }
-
         }
-        
-
-    }
-
-    backtrack() {
-
-    }
-
-    solve() {
-        this.f()
-        return this.backtrack();
     }
 }
 
@@ -164,37 +146,15 @@ start = new Node(undefined, new Point(0,0));
 
 m = new Maze(maze,goal, start);
 
-console.log(m.goal.y);
+
+// some tests
 assert(m.length === 3, "Length is not 3");
 assert(m.width === 5, "Width is not 5");
 let n1 = new Node(undefined, new Point(1,1));
 let n2 = new Node(undefined, new Point(1,1));
 assert(n1.equals(n2), "M is not equal to n");
-sol = [[4, 3, 2, 1, 0],
-       [5, 4, 3, 2, 1],
-       [6, 5, 4, 3, 2]];  
-console.log(m.f(), "SOLUTION");
+assert(m.f() == "ESEENE", "Map solution is wrong");
 
-let j =  {
-  "name": "Maze #236 (10x10)",
-  "mazePath": "/mazebot/mazes/ikTcNQMwKhux3bWjV3SSYKfyaVHcL0FXsvbwVGk5ns8",
-  "startingPosition": [ 4, 3 ],
-  "endingPosition": [ 3, 6 ],
-  "message": "When you have figured out the solution, post it back to this url. See the exampleSolution for more information.",
-  "exampleSolution": { "directions": "ENWNNENWNNS" },
-  "map": [
-    [ " ", " ", "X", " ", " ", " ", "X", " ", "X", "X" ],
-    [ " ", "X", " ", " ", " ", " ", " ", " ", " ", " " ],
-    [ " ", "X", " ", "X", "X", "X", "X", "X", "X", " " ],
-    [ " ", "X", " ", " ", "A", " ", " ", " ", "X", " " ],
-    [ " ", "X", "X", "X", "X", "X", "X", "X", " ", " " ],
-    [ "X", " ", " ", " ", "X", " ", " ", " ", "X", " " ],
-    [ " ", " ", "X", "B", "X", " ", "X", " ", "X", " " ],
-    [ " ", " ", "X", " ", "X", " ", "X", " ", " ", " " ],
-    [ "X", " ", "X", "X", "X", "X", "X", " ", "X", "X" ],
-    [ "X", " ", " ", " ", " ", " ", " ", " ", "X", "X" ]
-  ]
-}
 
 function solve(j) {
     start = new Node(undefined, new Point(j.startingPosition[1], j.startingPosition[0]));
@@ -205,27 +165,26 @@ function solve(j) {
     return sol;
 }
 
-solve(j);
 async function go() {
-let login = await axios.post("https://api.noopschallenge.com/mazebot/race/start",
-    {login: "mattschlosser"}, 
-    {headers: {"content-type" : "application/json"}});
-while (login.data.nextMaze) {
-    try {
-    let map = await axios.get("https://api.noopschallenge.com" + login.data.nextMaze);
-    let sol = solve(map.data);
-    console.log(sol);
-    login = await axios.post("https://api.noopschallenge.com" + map.data.mazePath,
-        {"directions": sol},
-        {headers: {"content-type" : "application/json"}});
-    } catch (error) {
-        console.log(error);
+    console.log("Get ready");
+    let login = await axios.post("https://api.noopschallenge.com/mazebot/race/start",
+                    {login: "mattschlosser"}, 
+                    {headers: {"content-type" : "application/json"}});
+    console.log("Go");
+    let mapsSolved = 0;
+    while (login.data.nextMaze) {
+        try {
+            let map = await axios.get("https://api.noopschallenge.com" + login.data.nextMaze);
+            let sol = solve(map.data);
+            login = await axios.post("https://api.noopschallenge.com" + map.data.mazePath,
+                {"directions": sol},
+                {headers: {"content-type" : "application/json"}});
+            console.log("Maps solved: ", ++mapsSolved);
+        } catch (error) {
+            console.log(error);
+        }
     }
+    console.log(login.data);
 }
-console.log(login.data);
-}
+
 go();
-
-
-
-
